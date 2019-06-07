@@ -85,17 +85,17 @@ if ($myWindowsPrincipal.IsInRole($adminRole)) {
     #
     
     Write-Host "🛠 Enabling Copy to Clipboard for all files in explorer."
-    
-    $allFilesShellConfig = Get-Item -LiteralPath "HKCR:\*\shell"
-    $allFilesConfig.CreateSubKey("CopyToClipboard")
-    
-    $copyToClipboardConfig = Get-Item -LiteralPath "HKCR:\*\shell\CopyToClipboard"
 
-    New-Item -Path "HKCR:\*\shell\copytoclipboard" -Name "copytoclipboard" –Force
-    New-ItemProperty -Path "HKCR:\*\shell\copytoclipboard" -Name "(default)" -Value "Copy to Clipboard"
-    New-ItemProperty -Path "HKCR:\*\shell\copytoclipboard" -Name "Icon" -Value "📋"
-    New-Item -Path "HKCR:\*\shell\copytoclipboard\command" -Name "command" –Force
-    New-ItemProperty -Path "HKCR:\*\shell\copytoclipboard\command" -Name "(default)" -Value "cmd /c clip < \"%1\""
+    # New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
+
+    $allFilesShellConfig = Get-Item -LiteralPath "HKCR:\"
+    $shellConfig = $allFilesShellConfig.OpenSubKey("*\shell", $true)
+    $copyToClipboardConfig = $shellConfig.CreateSubKey("CopyToClipboard")
+
+    $copyToClipboardConfig.SetValue($null, "Copy to Clipboard")
+    $copyToClipboardConfig.SetValue("icon", "📋")
+    $copyToClipboardCommand = $copyToClipboardConfig.CreateSubKey("command")
+    $copyToClipboardCommand.SetValue($null, "cmd /c clip < `"%1`"")
     
     # (Modify to not require shift) http://www.howtogeek.com/howto/windows-vista/create-a-context-menu-item-to-copy-a-text-file-to-the-clipboard-in-windows-vista/
     
